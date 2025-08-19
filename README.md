@@ -3,7 +3,9 @@ mine-with-docker
 
 This repository contains Docker images and Dockerfiles that let you get from zero to mining in around 5 minutes on any Linux host anywhere.
 
-CPU mining can be profitable using algorithmns like: Cryptonight, Hodl or Equihash. Find out more about [profitability here](https://www.nicehash.com/profitability-calculator).
+The included Dockerfile builds the latest version of [cpuminer-opt](https://github.com/JayDDee/cpuminer-opt) with support for modern algorithms like RandomX.
+
+CPU mining can be profitable using algorithms like RandomX, Yespower or Equihash. Find out more about [profitability here](https://www.nicehash.com/profitability-calculator).
 
 Disclaimer: this software is provided with no warranty. Use at your own risk. If you plan to mine on a cloud check the terms and conditions before you start. The same applies if you are using private equipment or an on-site datacenter for mining.
 
@@ -15,7 +17,7 @@ Instead of mining BitCoin or other currencies on your own this software works by
 
 * What should I mine?
 
-At time of writing a quad-core Intel CPU would be best mining Cryptonight, Hodl or Equihash.
+As of 2024, CPU mining is largely focused on algorithms such as RandomX for Monero. Check a profitability calculator for the best choice for your hardware.
 
 * How do I get a wallet?
 
@@ -77,13 +79,20 @@ docker swarm init
 
 ## Start mining
 
+Build the mining image:
+
+```
+docker build -t cpuminer-opt:latest cpu-opt/
+```
+
+
 Create a service and enter your bitcoin wallet ID:
 
 * Mine Hodl
 
 ```
 docker service create --mode=global \
-  --name miner alexellis2/cpu-opt:2018-1-2 ./cpuminer \
+  --name miner cpuminer-opt:latest ./cpuminer \
   -a hodl \
   -o stratum+tcp://hodl.usa.nicehash.com:3352 \
   -u 1M2KME8VBx24RsU3Ed2dEkF9EFghn3jR2o.cloud1
@@ -93,9 +102,19 @@ docker service create --mode=global \
 
 ```
 docker service create --mode=global \
-  --name miner alexellis2/cpu-opt:2018-1-2 ./cpuminer \
+  --name miner cpuminer-opt:latest ./cpuminer \
   -a cryptonight \
   -o stratum+tcp://cryptonight.usa.nicehash.com:3355 \
+  -u 1M2KME8VBx24RsU3Ed2dEkF9EFghn3jR2o.cloud1
+```
+
+* Mine Monero (RandomX)
+
+```
+docker service create --mode=global \
+  --name miner cpuminer-opt:latest ./cpuminer \
+  -a rx/0 \
+  -o stratum+tcp://randomx.usa.nicehash.com:3380 \
   -u 1M2KME8VBx24RsU3Ed2dEkF9EFghn3jR2o.cloud1
 ```
 
@@ -119,7 +138,7 @@ If you want you can limit the CPU usage using the `--limit-cpu` option in the `d
 Also its worth mentionining that you can limit the CPU core usage by selecting which cores to target via 
 
 ```
-docker run alexellis2/cpu-opt:2018-1-2 ./cpuminer --help:
+docker run cpuminer-opt:latest ./cpuminer --help:
       --cpu-affinity    set process affinity to cpu core(s), mask 0x3 for cores 0 and 1
       --cpu-priority    set process priority (default: 0 idle, 2 normal to 5 highest)
 ```
@@ -143,10 +162,10 @@ If you need to rebuild the Docker image for updates or for a different CPU archi
 ```
 git clone https://github.com/alexellis/mine-with-docker
 cd mine-with-docker/cpu-opt
-docker build -t cpu-opt:latest .
+docker build -t cpuminer-opt:latest .
 ```
 
-After rebuilding the image swap out `alexellis2/cpu-opt:2018-1-2` for `cpu-opt:latest` or whatever you chose to call it in the `docker build` command.
+After rebuilding the image swap out `cpuminer-opt:latest` in the commands above for whatever tag you used in the `docker build` command.
 
 ## Monitor your balance / workers
 
